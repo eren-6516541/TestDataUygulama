@@ -1,0 +1,41 @@
+USE [TestData]
+GO
+/****** Object:  StoredProcedure [dbo].[stok]    Script Date: 15.1.2022 21:05:26 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ 
+ALTER PROCEDURE [dbo].[stok]
+	@Malkodu varchar(30),
+	@basTar DateTime,
+	@bitTar Datetime
+AS
+BEGIN
+	  SELECT St1.ID,EvrakNo,CONVERT(VARCHAR(15), CAST(Tarih - 2 AS datetime) , 104)as Tarih,St1.MalKodu,Miktar,Fiyat,Tutar,GirisMiktar,CikisMiktar,Stok,
+
+CASE
+    WHEN IslemTur = 1 THEN 'Giris'
+    WHEN IslemTur = 0 THEN 'Cikis'
+
+    ELSE 'YOK'
+END AS IslemTur
+
+
+
+FROM STI as St1
+left join
+(Select ID, Case When IslemTur=1 Then Miktar else 0   end as GirisMiktar  from STI) as St2
+on(St1.ID=St2.ID)
+
+left join
+(Select ID, Case When IslemTur=0 Then Miktar else 0   end as CikisMiktar  from STI) as St3
+on(St1.ID=St3.ID)
+
+left join
+(Select ID, Case When IslemTur=1 Then 0 when IslemTur=0 then 0 else 0   end as Stok  from STI) as St4
+on(St1.ID=St4.ID)
+	 where Tarih between @basTar and @bitTar  and Malkodu like @Malkodu  order by Tarih asc
+	 
+END
+-- burada sadece stok hesaplanmýyor ...gridde kodla yapýlýyor..
